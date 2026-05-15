@@ -1,0 +1,53 @@
+name: Bug report
+description: Something broken in local-pass
+labels: [bug]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Steps to reproduce, what you expected, what actually happened. **Redact your bearer token** before pasting any logs.
+    validations:
+      required: true
+  - type: dropdown
+    id: arch
+    attributes:
+      label: Architecture
+      options: [x64, ARM64]
+    validations:
+      required: true
+  - type: dropdown
+    id: tunnel
+    attributes:
+      label: Tunnel provider
+      options: [ngrok, Tailscale, Cloudflare Tunnel, Direct (no tunnel), N/A]
+    validations:
+      required: true
+  - type: dropdown
+    id: client
+    attributes:
+      label: AI client
+      options:
+        - Claude.ai (web)
+        - Claude (mobile)
+        - ChatGPT (web)
+        - ChatGPT (mobile)
+        - Claude Desktop
+        - LM Studio
+        - Other (specify in description)
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: local-pass version
+      description: Output of `local-pass.exe --version`
+      placeholder: e.g. 0.1.0-alpha
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: Relevant lines from `./.local-pass/access.log` or other log files. **Redact your bearer token.**
+      render: shell

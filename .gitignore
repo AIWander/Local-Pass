@@ -1,0 +1,31 @@
+# Rust
+/target
+**/*.rs.bk
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Local state (auth tokens, audit logs, breadcrumbs — NEVER commit)
+.local-pass/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Release artifacts
+*.exe
+*.pdb
+*.dll
+*.msi
+*.zip
+
+# Logs
+*.log

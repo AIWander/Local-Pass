@@ -1,0 +1,25 @@
+name: Feature request
+description: Suggest something new for local-pass
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe the remote-access use case or workflow that's currently painful.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: What would the API / tool / behavior look like?
+  - type: textarea
+    id: security
+    attributes:
+      label: Security implications
+      description: Does this expand the attack surface? How would we mitigate?
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
