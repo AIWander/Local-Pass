@@ -3,6 +3,7 @@
 //! v0.1.0-alpha: install/uninstall subcommands wired; serve/init/rotate-token are scaffold-only.
 //! See https://github.com/AIWander/Local-Pass for status and install instructions.
 
+mod auth;
 mod install;
 
 use anyhow::Result;
@@ -25,21 +26,14 @@ fn main() -> Result<()> {
         }
         Some("install") => install::install(SERVER_KEY, &args[2..]),
         Some("uninstall") => install::uninstall(SERVER_KEY, &args[2..]),
-        Some("init") => {
-            eprintln!("init subcommand not yet implemented (scaffold v{}).", env!("CARGO_PKG_VERSION"));
-            eprintln!("Will: generate bearer token, write to ./.local-pass/auth.token, print to console.");
-            std::process::exit(2);
-        }
+        Some("init") => auth::init(&args[2..]),
         Some("serve") => {
             eprintln!("serve subcommand not yet implemented (scaffold v{}).", env!("CARGO_PKG_VERSION"));
             eprintln!("Will: start HTTP/SSE MCP server on configured bind address (default 127.0.0.1:9100).");
             eprintln!("See https://github.com/AIWander/Local-Pass#manual-operation-until-v1-ships for the manual workaround.");
             std::process::exit(2);
         }
-        Some("rotate-token") => {
-            eprintln!("rotate-token subcommand not yet implemented (scaffold v{}).", env!("CARGO_PKG_VERSION"));
-            std::process::exit(2);
-        }
+        Some("rotate-token") => auth::rotate(&args[2..]),
         None => {
             eprintln!("local-pass v{} — no subcommand given.", env!("CARGO_PKG_VERSION"));
             eprintln!("Try: local-pass --help");
