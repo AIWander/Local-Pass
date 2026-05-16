@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="windows-1252"?>
+<!--
+  Local-Pass WiX installer template.
+  Built by cargo-wix on tag-push via .github/workflows/build.yml.
+  UpgradeCode + Component GUIDs are stable across versions for proper upgrade tracking.
+-->
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <Product Id="*"
+             Name="Local-Pass"
+             UpgradeCode="DC7CB42A-8036-400C-8F94-F7165F37B487"
+             Manufacturer="AIWander"
+             Language="1033"
+             Codepage="1252"
+             Version="$(var.Version)">
+
+        <Package Id="*"
+                 Keywords="Installer"
+                 Description="Local-Pass — expose your Windows machine to a remote AI via secure tunnel + bearer token"
+                 Manufacturer="AIWander"
+                 InstallerVersion="450"
+                 Languages="1033"
+                 Compressed="yes"
+                 InstallScope="perMachine"
+                 SummaryCodepage="1252"
+                 Platform="$(var.Platform)"/>
+
+        <MajorUpgrade
+            Schedule="afterInstallInitialize"
+            DowngradeErrorMessage="A newer version of Local-Pass is already installed. Setup will now exit."/>
+
+        <Media Id="1" Cabinet="media1.cab" EmbedCab="yes" DiskPrompt="CD-ROM #1"/>
+        <Property Id="DiskPrompt" Value="Local-Pass Installation"/>
+
+        <Directory Id="TARGETDIR" Name="SourceDir">
+            <Directory Id="$(var.PlatformProgramFilesFolder)" Name="PFiles">
+                <Directory Id="APPLICATIONFOLDER" Name="Local-Pass">
+                    <Component Id="License" Guid="*" Win64="$(var.Win64)">
+                        <File Id="LicenseFile" Name="LICENSE" DiskId="1" Source="LICENSE" KeyPath="yes"/>
+                    </Component>
+                    <Component Id="LocalPass" Guid="B0F4BC5D-F0C3-43C9-AC12-2DE46C9CDDEA" Win64="$(var.Win64)">
+                        <File Id="LocalPassExe"
+                              Name="local-pass.exe"
+                              DiskId="1"
+                              Source="$(var.CargoTargetBinDir)\local-pass.exe"
+                              KeyPath="yes"/>
+                    </Component>
+                    <Component Id="LocalPassPath" Guid="*" Win64="$(var.Win64)" KeyPath="yes">
+                        <Environment Id="LocalPassPathEnv"
+                                     Name="PATH"
+                                     Value="[APPLICATIONFOLDER]"
+                                     Permanent="no"
+                                     Part="last"
+                                     Action="set"
+                                     System="yes"/>
+                    </Component>
+                </Directory>
+            </Directory>
+        </Directory>
+
+        <Feature Id="MainProgram"
+                 Title="Local-Pass"
+                 Description="The local-pass.exe binary"
+                 Level="1"
+                 ConfigurableDirectory="APPLICATIONFOLDER"
+                 AllowAdvertise="no"
+                 Display="expand"
+                 Absent="disallow">
+            <ComponentRef Id="License"/>
+            <ComponentRef Id="LocalPass"/>
+            <Feature Id="Path"
+                     Title="Add to PATH"
+                     Description="Add local-pass.exe to system PATH"
+                     Level="1">
+                <ComponentRef Id="LocalPassPath"/>
+            </Feature>
+        </Feature>
+
+        <Property Id="ARPHELPLINK" Value="https://github.com/AIWander/Local-Pass/issues"/>
+        <Property Id="ARPURLINFOABOUT" Value="https://github.com/AIWander/Local-Pass"/>
+        <Property Id="ARPURLUPDATEINFO" Value="https://github.com/AIWander/Local-Pass/releases"/>
+
+        <SetProperty Id="ARPINSTALLLOCATION" Value="[APPLICATIONFOLDER]" After="CostFinalize"/>
+    </Product>
+</Wix>

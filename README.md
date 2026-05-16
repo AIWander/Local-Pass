@@ -263,6 +263,19 @@ Local-Pass exposes your machine to the internet (via your tunnel). Defaults are 
 
 Review [SECURITY.md](SECURITY.md) before publishing your tunnel URL.
 
+## Manual operation (until v1 ships)
+
+Local-Pass v0.1.0-alpha is **scaffold-only** — `local-pass.exe serve` doesn't yet start a real HTTP/SSE server, the screen viewer is unimplemented, and no auth code is wired up. While we build the real implementation, here's how to achieve the same end-result manually with off-the-shelf tools:
+
+1. **Run an HTTP MCP server** of your choice on a local port (e.g., `http://localhost:9100`). Several open-source MCP servers ship HTTP/SSE transports today.
+2. **Add bearer-token auth** at a reverse-proxy layer (Caddy or nginx with a simple auth header check) since most MCP servers don't ship bearer auth out of the box.
+3. **Tunnel it** with ngrok / Tailscale / Cloudflare Tunnel as documented in the [Tunneling](#tunneling) section above.
+4. **Add the URL + bearer token** to your AI client (Claude.ai integration / ChatGPT custom action) as an MCP server.
+
+When v1 ships, `local-pass.exe serve` replaces steps 1–2 in a single command: the binary does HTTP/SSE MCP, owns bearer-token auth + IP-ban + audit log, exposes your tools, and (optionally) the screen viewer. Steps 3–4 are intentionally still up to you — tunnel choice is yours.
+
+Implementation iterates here in the open. PRs and design discussion welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) and the [Auth model](#auth-model) + [Screen viewer](#screen-viewer) sections above for the design.
+
 ## License
 
 MIT. See [LICENSE](LICENSE).
