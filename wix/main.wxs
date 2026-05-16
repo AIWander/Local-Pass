@@ -44,7 +44,7 @@
                               Source="$(var.CargoTargetBinDir)\local-pass.exe"
                               KeyPath="yes"/>
                     </Component>
-                    <Component Id="LocalPassPath" Guid="*" Win64="$(var.Win64)" KeyPath="yes">
+                    <Component Id="LocalPassPath" Guid="64BEAD99-D85E-46A3-BC09-59F3FE736432" Win64="$(var.Win64)" KeyPath="yes">
                         <Environment Id="LocalPassPathEnv"
                                      Name="PATH"
                                      Value="[APPLICATIONFOLDER]"
