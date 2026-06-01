@@ -27,7 +27,7 @@ serde = { version = "1", features = ["derive"] }
 # MCP Streamable HTTP transport (the remote-MCP spec GPT/Claude connect to).
 # transport-streamable-http-server pulls in the bundled LocalSessionManager +
 # tower service; macros/server give us the ServerHandler trait + model types.
-rmcp = { version = "0.16", default-features = false, features = ["server", "macros", "transport-streamable-http-server"] }
+rmcp = { version = "1.4", default-features = false, features = ["server", "macros", "transport-streamable-http-server"] }
 # reqwest 0.12 (NOT 0.11 — 0.11 drags in vulnerable rustls-webpki). rustls-tls
 # avoids a system OpenSSL dependency; matches the fleet's HTTP client surface.
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json", "blocking"] }
