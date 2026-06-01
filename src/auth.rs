@@ -8,7 +8,7 @@
 //!   init             generate token, write to disk, print to console (errors if exists unless --force)
 //!   rotate-token     generate new token, overwrite existing, print to console (no backup — rotation = invalidation)
 
-use anyhow::{Context, Result, bail};
+use anyhow::{bail, Context, Result};
 use rand::RngCore;
 use std::path::PathBuf;
 
@@ -52,7 +52,9 @@ pub fn rotate(_args: &[String]) -> Result<()> {
     if existed {
         println!("Previous token has been INVALIDATED. Any AI client still using it will get 401 on the next request.");
     } else {
-        println!("(No previous token existed — this is effectively the same as `local-pass init`.)");
+        println!(
+            "(No previous token existed — this is effectively the same as `local-pass init`.)"
+        );
     }
     println!();
     println!("New token saved to: {}", path.display());
@@ -82,9 +84,9 @@ fn hex_encode(bytes: &[u8]) -> String {
 
 /// Resolve the token storage path: `<exe-dir>/.local-pass/auth.token`
 pub fn token_path() -> Result<PathBuf> {
-    let exe = std::env::current_exe()
-        .context("could not resolve current executable path")?;
-    let exe_dir = exe.parent()
+    let exe = std::env::current_exe().context("could not resolve current executable path")?;
+    let exe_dir = exe
+        .parent()
         .with_context(|| format!("exe path has no parent: {}", exe.display()))?;
     Ok(exe_dir.join(".local-pass").join("auth.token"))
 }
@@ -109,8 +111,7 @@ fn write_token_atomic(path: &PathBuf, token: &str) -> Result<()> {
             .with_context(|| format!("could not create parent dir: {}", parent.display()))?;
     }
     let tmp = path.with_extension("token.tmp");
-    std::fs::write(&tmp, token)
-        .with_context(|| format!("write failed: {}", tmp.display()))?;
+    std::fs::write(&tmp, token).with_context(|| format!("write failed: {}", tmp.display()))?;
     // On Windows, rename over an existing file requires the target to be removable;
     // std::fs::rename doesn't auto-replace pre-Rust-1.79 — use copy+remove fallback.
     if path.exists() {

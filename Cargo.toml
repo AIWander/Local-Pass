@@ -22,8 +22,17 @@ rand = "0.8"
 tokio = { version = "1", features = ["rt-multi-thread", "macros", "signal", "net", "io-util", "fs"] }
 axum = { version = "0.7", default-features = false, features = ["http1", "json", "tokio"] }
 tower = "0.5"
-tower-http = { version = "0.6", features = ["trace"] }
+tower-http = { version = "0.6", features = ["trace", "cors"] }
 serde = { version = "1", features = ["derive"] }
+# MCP Streamable HTTP transport (the remote-MCP spec GPT/Claude connect to).
+# transport-streamable-http-server pulls in the bundled LocalSessionManager +
+# tower service; macros/server give us the ServerHandler trait + model types.
+rmcp = { version = "0.16", default-features = false, features = ["server", "macros", "transport-streamable-http-server"] }
+# reqwest 0.12 (NOT 0.11 — 0.11 drags in vulnerable rustls-webpki). rustls-tls
+# avoids a system OpenSSL dependency; matches the fleet's HTTP client surface.
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json", "blocking"] }
+uuid = { version = "1", features = ["v4"] }
+once_cell = "1"
 
 [profile.release]
 opt-level = 3
