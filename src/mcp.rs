@@ -60,33 +60,33 @@ impl GatewayHandler {
 
 impl ServerHandler for GatewayHandler {
     fn get_info(&self) -> InitializeResult {
-        InitializeResult {
-            protocol_version: ProtocolVersion::LATEST,
-            capabilities: ServerCapabilities::builder().enable_tools().build(),
-            server_info: Implementation {
-                name: "local-pass".to_string(),
-                title: Some("Local-Pass Gateway".to_string()),
-                version: env!("CARGO_PKG_VERSION").to_string(),
-                description: Some(format!(
-                    "Remote MCP gateway exposing the '{}' tool profile, root-scoped to {}{}.",
-                    self.profile.name(),
-                    self.guard.root().display(),
-                    if self.guard.is_read_only() {
-                        " (read-only)"
-                    } else {
-                        ""
-                    }
-                )),
-                icons: None,
-                website_url: Some("https://github.com/AIWander/Local-Pass".to_string()),
-            },
-            instructions: Some(format!(
+        // rmcp 1.7 marks InitializeResult / Implementation `#[non_exhaustive]`,
+        // so they must be built via constructor + `with_*` setters rather than
+        // struct literals.
+        let description = format!(
+            "Remote MCP gateway exposing the '{}' tool profile, root-scoped to {}{}.",
+            self.profile.name(),
+            self.guard.root().display(),
+            if self.guard.is_read_only() {
+                " (read-only)"
+            } else {
+                ""
+            }
+        );
+        let server_info = Implementation::new("local-pass", env!("CARGO_PKG_VERSION"))
+            .with_title("Local-Pass Gateway")
+            .with_description(description)
+            .with_website_url("https://github.com/AIWander/Local-Pass");
+
+        InitializeResult::new(ServerCapabilities::builder().enable_tools().build())
+            .with_protocol_version(ProtocolVersion::LATEST)
+            .with_server_info(server_info)
+            .with_instructions(format!(
                 "Local-Pass gateway. Active profile: '{}'. All file paths are scoped to {}. \
                  Tools not in the profile are neither listed nor callable.",
                 self.profile.name(),
                 self.guard.root().display()
-            )),
-        }
+            ))
     }
 
     async fn list_tools(
@@ -137,21 +137,17 @@ impl ServerHandler for GatewayHandler {
             Err(_) => value.to_string(),
         };
         let content = vec![Content::text(body)];
-        if is_error {
-            Ok(CallToolResult {
-                content,
-                structured_content: Some(value),
-                is_error: Some(true),
-                meta: None,
-            })
+        // rmcp 1.7's CallToolResult is `#[non_exhaustive]`: use the success/error
+        // constructors (which set the is_error flag) and then attach the machine-
+        // readable JSON to the public `structured_content` field, so the response
+        // still carries BOTH the pretty text block and the structured value.
+        let mut result = if is_error {
+            CallToolResult::error(content)
         } else {
-            Ok(CallToolResult {
-                content,
-                structured_content: Some(value),
-                is_error: Some(false),
-                meta: None,
-            })
-        }
+            CallToolResult::success(content)
+        };
+        result.structured_content = Some(value);
+        Ok(result)
     }
 }
 
