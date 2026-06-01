@@ -117,12 +117,13 @@ pub fn run(args: &[String]) -> Result<()> {
         // A single nest at "/mcp" serves both the exact path and "/mcp/..." —
         // nesting "/mcp" and "/mcp/" separately collides on axum's internal
         // tail-param route.
-        let mcp_routes = Router::new()
-            .nest_service("/mcp", mcp_service)
-            .layer(middleware::from_fn_with_state(
-                auth_state.clone(),
-                bearer_auth,
-            ));
+        let mcp_routes =
+            Router::new()
+                .nest_service("/mcp", mcp_service)
+                .layer(middleware::from_fn_with_state(
+                    auth_state.clone(),
+                    bearer_auth,
+                ));
 
         let app = Router::new()
             .route("/health", get(health_handler))

@@ -144,7 +144,8 @@ mod tests {
         // Enough `..` segments to climb above the (deep) temp root must NOT
         // resolve to a path under it — the guard rejects the escape outright.
         assert!(
-            g.resolve_in_root("../../../../../../../../etc/passwd").is_err(),
+            g.resolve_in_root("../../../../../../../../etc/passwd")
+                .is_err(),
             "deep ../ escape must be rejected, not silently resolved"
         );
         // A `..` that stays within the root is fine.
