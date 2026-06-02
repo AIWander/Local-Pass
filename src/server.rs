@@ -111,7 +111,13 @@ pub fn run(args: &[String]) -> Result<()> {
                 ))
             },
             Arc::new(LocalSessionManager::default()),
-            StreamableHttpServerConfig::default(),
+            // rmcp 1.7's default Host-header allowlist (DNS-rebinding guard) only
+            // permits loopback, which 403s every request that arrives via the
+            // tunnel under a public hostname. Disable it: this gateway is reached
+            // through a reverse proxy under arbitrary hostnames, and the bearer
+            // token (plus Cloudflare Access in front) are the real auth gates — a
+            // rebinding attacker still cannot supply the bearer.
+            StreamableHttpServerConfig::default().disable_allowed_hosts(),
         );
 
         // A single nest at "/mcp" serves both the exact path and "/mcp/..." —
