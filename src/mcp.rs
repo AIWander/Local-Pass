@@ -11,7 +11,7 @@ use std::sync::Arc;
 
 use rmcp::handler::server::ServerHandler;
 use rmcp::model::{
-    CallToolRequestParams, CallToolResult, Content, ErrorData as McpError, Implementation,
+    CallToolRequestParams, CallToolResult, ContentBlock, ErrorData as McpError, Implementation,
     InitializeResult, JsonObject, ListToolsResult, PaginatedRequestParams, ProtocolVersion,
     ServerCapabilities, Tool,
 };
@@ -136,7 +136,7 @@ impl ServerHandler for GatewayHandler {
             Ok(s) => s,
             Err(_) => value.to_string(),
         };
-        let content = vec![Content::text(body)];
+        let content = vec![ContentBlock::text(body)];
         // rmcp 1.7's CallToolResult is `#[non_exhaustive]`: use the success/error
         // constructors (which set the is_error flag) and then attach the machine-
         // readable JSON to the public `structured_content` field, so the response
