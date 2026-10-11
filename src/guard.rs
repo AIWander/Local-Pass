@@ -81,11 +81,12 @@ impl Guard {
 
         let normalized = lexical_normalize(&joined);
 
-        // If the concrete target exists, canonicalize it (resolves symlinks) and
-        // check containment against the canonical root. Otherwise fall back to
-        // the lexical form — its nearest existing ancestor is still validated by
-        // the lexical containment check below.
-        let candidate = std::fs::canonicalize(&normalized).unwrap_or(normalized);
+        // Canonicalize the nearest existing ancestor (resolves symlinks) and
+        // re-append the not-yet-existing tail. The candidate then has the same
+        // form as the canonical root: on Windows both carry the verbatim `\\?\`
+        // prefix, which `starts_with` would otherwise treat as a different
+        // prefix and reject every new file.
+        let candidate = canonicalize_existing_prefix(&normalized);
 
         if !candidate.starts_with(&self.root) {
             return Err(format!(
@@ -95,6 +96,29 @@ impl Guard {
             ));
         }
         Ok(candidate)
+    }
+}
+
+/// Canonicalize the longest existing prefix of `path` and join the remaining
+/// components back on. Falls back to `path` unchanged if no ancestor exists.
+fn canonicalize_existing_prefix(path: &Path) -> PathBuf {
+    let mut existing = path;
+    let mut tail: Vec<&std::ffi::OsStr> = Vec::new();
+    loop {
+        if let Ok(canon) = std::fs::canonicalize(existing) {
+            let mut out = canon;
+            for part in tail.iter().rev() {
+                out.push(part);
+            }
+            return out;
+        }
+        match (existing.parent(), existing.file_name()) {
+            (Some(parent), Some(name)) => {
+                tail.push(name);
+                existing = parent;
+            }
+            _ => return path.to_path_buf(),
+        }
     }
 }
 
@@ -165,6 +189,21 @@ mod tests {
             "/etc/passwd"
         };
         assert!(g.resolve_in_root(other).is_err());
+        let _ = std::fs::remove_dir_all(&tmp);
+    }
+
+    #[test]
+    fn absolute_new_file_under_root_resolves() {
+        // Regression: the root is canonicalized (verbatim `\\?\` on Windows) but
+        // a caller passes a plain absolute path to a file that does not exist
+        // yet. It must resolve inside the root, not be rejected.
+        let tmp = std::env::temp_dir().join(format!("lp-guard-{}", uuid::Uuid::new_v4()));
+        std::fs::create_dir_all(&tmp).unwrap();
+        let g = guard_at(&tmp);
+        let raw = tmp.join("new_dir").join("new_file.txt");
+        let p = g.resolve_in_root(raw.to_str().unwrap()).unwrap();
+        assert!(p.starts_with(g.root()));
+        assert!(p.ends_with("new_dir/new_file.txt"));
         let _ = std::fs::remove_dir_all(&tmp);
     }
 
